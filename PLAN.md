@@ -13,4 +13,5 @@ Irrelevant question > suggest recommened question
 relevant question > detect the intent and other details
 5. If customer details is required use SQL agent get details
 6. If RAG is required run the RAG_agent
-7. If generation is required use the generate_agent
+7. If generation is required use the 
+8. Print inter steps and results to UI
