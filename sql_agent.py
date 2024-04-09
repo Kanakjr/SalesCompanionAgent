@@ -47,7 +47,7 @@ class SQLAgent:
         few_shot_prompt = FewShotPromptTemplate(
             example_selector=example_selector,
             example_prompt=PromptTemplate.from_template(
-                "User input: {input}\nSQL query: {query}\nFormat Instruction: {format_instruction}"
+                "User input: {input}\nDescription:{description}\nSQL query: {query}\nFormat Instruction: {format_instruction}"
             ),
             input_variables=["input", "dialect", "top_k", "user_info"],
             prefix=system_prefix,
@@ -98,8 +98,11 @@ if __name__ == "__main__":
     }
     sql_agent = SQLAgent(llm=llm, db=db, user_info=user_info)
 
-    sql_agent.invoke("How am I performing against my goals?")
+    # sql_agent.invoke("How am I performing against my goals?")
     # sql_agent.invoke("Which doctors are assigned to me and what are their priority?")
     # sql_agent.invoke("How many prescription has been written by Dr. Robert Wilson?")
     # sql_agent.invoke("Who should I contact this week")
     # sql_agent.invoke("Write an email to Dr. Robert Wilson?")
+
+    sql_agent.invoke("Can you Draft an email to Tanya Lewis?")
+

@@ -25,8 +25,9 @@ examples = [
     },
     {
         "input": "Can you Draft an email to [HCP Name]",
-        "description": "Sales Rep is asking to draft an email to doctor/hcp?",
-        "query": "SELECT A.hcp_id, A.hcp_name,B.salesrep_id,B.name as SaleRep_Name\nFROM\n(SELECT DISTINCT hcp.hcp_id, hcp.hcp_name,hcp.Email\nFROM main.HCP hcp WHERE hcp.hcp_name = 'Mia Brown') A cross join \n(SELECT DISTINCT sr.salesrep_id, sr.name\nFROM main.SalesRep sr WHERE  sr.name = 'Bob Smith') B;",
+        "description": "Sales Rep is asking to draft or write an email",
+        "query": "Select HCP_Name,Speciality,Phone_No,Email,Account_Type,Account_Name from [main].[HCP] Where HCP_Name = 'William Davis';",
+        # "query": "SELECT A.hcp_id, A.hcp_name,B.salesrep_id,B.name as SaleRep_Name\nFROM\n(SELECT DISTINCT hcp.hcp_id, hcp.hcp_name,hcp.Email\nFROM main.HCP hcp WHERE hcp.hcp_name = 'Mia Brown') A cross join \n(SELECT DISTINCT sr.salesrep_id, sr.name\nFROM main.SalesRep sr WHERE  sr.name = 'Bob Smith') B;",
         "format_instruction": ""
     },
     {

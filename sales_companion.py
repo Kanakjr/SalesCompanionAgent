@@ -1,9 +1,10 @@
 from structured import StructuredDatabase
 from sql_agent import SQLAgent
 from llm import load_llm
+from dotenv import load_dotenv
 
+load_dotenv("./.env")
 structured_database_uri = "sqlite:///./data/SalesAssistant.db"
-
 
 class SalesCompanion:
     def __init__(self, useremail):
@@ -32,5 +33,8 @@ if __name__ == "__main__":
     sales_companion = SalesCompanion(useremail="john.doe@example.com")
     print(sales_companion.user_info)
 
-    response = sales_companion.invoke("How am I performing against my goals?")
+    # response = sales_companion.invoke("How am I performing against my goals?")
+    # print(response)
+
+    response = sales_companion.invoke("Can you Draft an email to Tanya Lewis?")
     print(response)
