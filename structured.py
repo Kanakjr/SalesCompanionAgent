@@ -270,18 +270,22 @@ if __name__ == "__main__":
 
     # Load data from excel or csv file, sqlite_in_memory=True will store data in memory
     # db = StructuredDatabase.from_excel_or_csv(filepath, sqlite_in_memory=False)
-    
+
     # Load data from sqlite database
     db = StructuredDatabase.from_uri("sqlite:///./data/SalesAssistant.db")
 
     # Get schema string
     schema_str = db.get_schema_str()
+    print(schema_str)
 
     # Get data from database
     result = db.run("SELECT * FROM SalesRep")
+    print(result)
     
     # Get data from database as pandas dataframe
     df = db.df_from_sql_query("SELECT * FROM SalesRep")
+    print(df)
     
     # Fetch distinct row values
     distinct_row_values = db.fetch_distinct_row_values("[('SalesRep', 'Name')]")
+    print(distinct_row_values)
