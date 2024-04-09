@@ -5,23 +5,28 @@ from langchain_openai import ChatOpenAI
 from llm import load_llm, load_openai_embeddings
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables, which may include API keys and database paths
 load_dotenv("./.env")
 
-# Initialize components that are reused across calls to the function
+# Initialize database connection to store and retrieve sales interactions
 structured_database_uri = "sqlite:///./data/SalesAssistant.db"
 db = StructuredDatabase.from_uri(structured_database_uri)
+
+# Initialize ChromaDB client for vector-based storage and retrieval of interaction notes
 chroma_client = chromadb.PersistentClient(path="./data/vectorstore/")
 
 def create_interaction_notes(llm, openai_embedding, collection_name):
+    # Template for generating interaction notes based on details of a sales rep's interaction with a doctor (HCP)
     prompt = ChatPromptTemplate.from_template(
         """Given the details of an interaction between a sales representative and a doctor (HCP).
         Interaction Details: {interaction_detail}                                  
         You are the sales rep from the interaction and your task is to generate notes for the given interaction in about 100-200 words.
         Interaction Notes:"""
     )
+    # Chain the prompt template with the language model for processing
     chain = prompt | llm
 
+    # Query the database for historical interaction details
     interaction_history = db.df_from_sql_query(
         """SELECT IH.*, 
                 HCP.HCP_Name, 
@@ -40,9 +45,12 @@ def create_interaction_notes(llm, openai_embedding, collection_name):
         """
     ).to_dict(orient="records")
 
+    # Generate interaction notes for each historical interaction detail
     responses = chain.batch([{"interaction_detail": interaction_detail} for interaction_detail in interaction_history])
 
+    # Create or get a collection in ChromaDB to store the generated interaction notes
     collection = chroma_client.create_collection(name=collection_name)
+    # Add the generated notes to the collection, including embeddings for future retrieval, documents, and metadata
     collection.add(
         embeddings=[openai_embedding.embed_query(response.content) for response in responses],
         documents=[response.content for response in responses],
@@ -51,9 +59,10 @@ def create_interaction_notes(llm, openai_embedding, collection_name):
     )
 
 if __name__ == "__main__":
-    # Load your LLM and embeddings as needed
+    # Load language model and embeddings necessary for generating and storing interaction notes
     llm = load_llm()
     openai_embedding = load_openai_embeddings()
     collection_name = "interaction_notes"
 
+    # Execute the function to create interaction notes in the specified collection
     create_interaction_notes(llm, openai_embedding, collection_name)
