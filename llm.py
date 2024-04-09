@@ -3,6 +3,10 @@ import os
 from langchain_openai import ChatOpenAI, OpenAI
 from langchain_openai import AzureOpenAI, AzureChatOpenAI
 from langchain_openai import OpenAIEmbeddings, AzureOpenAIEmbeddings
+from langchain.globals import set_llm_cache
+from langchain.cache import SQLiteCache
+
+set_llm_cache(SQLiteCache(database_path="./data/.langchain.db"))
 
 def load_openai_embeddings():
     if os.environ[f"GENAI_TYPE"] == "OpenAI" or os.environ[f"GENAI_TYPE"] == "ChatOpenAI":
@@ -29,12 +33,14 @@ def load_llm():
             openai_api_key=os.environ[f"OPENAI_API_KEY"],
             model_name=os.environ[f"OPENAI_MODEL_NAME"],
             temperature=0.1,
+            streaming=True
         )
     elif os.environ[f"GENAI_TYPE"] == "ChatOpenAI":
         llm = ChatOpenAI(
             openai_api_key=os.environ[f"OPENAI_API_KEY"],
             model_name=os.environ[f"OPENAI_MODEL_NAME"],
             temperature=0.1,
+            streaming=True
         )
     elif os.environ[f"GENAI_TYPE"] == "AzureOpenAI":
         llm = AzureOpenAI(
@@ -45,6 +51,7 @@ def load_llm():
             model_name=os.environ["OPENAI_MODEL_NAME"],
             temperature=0.1,
             max_retries=12,
+            streaming=True
         )
     elif os.environ[f"GENAI_TYPE"] == "AzureOpenAIChat":
         llm = AzureChatOpenAI(
@@ -56,6 +63,7 @@ def load_llm():
             temperature=0.1,
             max_retries=12,
             model_kwargs={},
+            streaming=True
         )
     return llm
 

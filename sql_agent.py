@@ -25,16 +25,16 @@ DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the databa
 
 If the question does not seem related to the database, just return "I don't know" as the answer.
 
-User Information: {userinfo}
+User Information: {user_info}
 
 Here are some examples of user inputs and their corresponding SQL queries:"""
 
 
 class SQLAgent:
-    def __init__(self, llm, db, userinfo):
+    def __init__(self, llm, db, user_info):
         self.db = db
         self.llm = (llm,)
-        self.userinfo = userinfo
+        self.user_info = user_info
 
         example_selector = SemanticSimilarityExampleSelector.from_examples(
             examples,
@@ -49,7 +49,7 @@ class SQLAgent:
             example_prompt=PromptTemplate.from_template(
                 "User input: {input}\nSQL query: {query}\nFormat Instruction: {format_instruction}"
             ),
-            input_variables=["input", "dialect", "top_k", "userinfo"],
+            input_variables=["input", "dialect", "top_k", "user_info"],
             prefix=system_prefix,
             suffix="",
         )
@@ -71,7 +71,12 @@ class SQLAgent:
         )
 
     def invoke(self, input):
-        return self.agent.invoke({"input": input, "userinfo": self.userinfo})
+        return self.agent.invoke({"input": input, "user_info": self.user_info})
+
+    def run(self, input, callbacks=[]):
+        return self.agent.run(
+            {"input": input, "user_info": self.user_info}, callbacks=callbacks
+        )
 
 
 if __name__ == "__main__":
@@ -83,7 +88,7 @@ if __name__ == "__main__":
 
     db = StructuredDatabase.from_uri("sqlite:///./data/SalesAssistant.db")
 
-    userinfo = {
+    user_info = {
         "SalesRep_ID": "T01",
         "Name": "John Doe",
         "Team": "Regional Team C",
@@ -91,10 +96,10 @@ if __name__ == "__main__":
         "Territory_ID": "T01",
         "Email": "john.doe@example.com",
     }
-    sql_agent = SQLAgent(llm=llm, db=db, userinfo=userinfo)
+    sql_agent = SQLAgent(llm=llm, db=db, user_info=user_info)
 
     sql_agent.invoke("How am I performing against my goals?")
     # sql_agent.invoke("Which doctors are assigned to me and what are their priority?")
     # sql_agent.invoke("How many prescription has been written by Dr. Robert Wilson?")
     # sql_agent.invoke("Who should I contact this week")
-
+    # sql_agent.invoke("Write an email to Dr. Robert Wilson?")
