@@ -39,7 +39,7 @@ examples = [
     {
         "input": "Which doctors are assigned to me and what are their priority?",
         "description": "When Sales Rep want to know the doctors assigned to them",
-        "query": "Select hcp.HCP_Name, Priority\nfrom main.HCP hcp join [main].[SalesRep] sr on hcp.Territory_ID = sr.Territory_ID\nwhere sr.Name = 'Dinesh Pal';",
+        "query": "Select hcp.HCP_Name, Priority\nfrom main.HCP hcp join [main].[SalesRep] sr on hcp.Territory_ID = sr.Territory_ID\nwhere sr.Name = 'Kanak Dahake';",
         "format_instruction": ""
     }
 ]
