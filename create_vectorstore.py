@@ -1,7 +1,6 @@
 import chromadb
 from structured import StructuredDatabase
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
 from llm import load_llm, load_openai_embeddings
 from dotenv import load_dotenv
 
@@ -58,11 +57,32 @@ def create_interaction_notes(llm, openai_embedding, collection_name):
         ids=[interaction_detail["History_ID"] for interaction_detail in interaction_history],
     )
 
+def create_hcp_names(llm, openai_embedding, collection_name):
+    hcp_list = db.df_from_sql_query(
+        """SELECT *
+        FROM HCP;
+        """
+    ).to_dict(orient="records")
+
+    collection = chroma_client.create_collection(name=collection_name)
+    # Add the generated notes to the collection, including embeddings for future retrieval, documents, and metadata
+    collection.add(
+        embeddings=[openai_embedding.embed_query(hcp['HCP_Name']) for hcp in hcp_list],
+        documents=[hcp['HCP_Name'] for hcp in hcp_list],
+        metadatas=[hcp for hcp in hcp_list],
+        ids=[hcp['HCP_ID'] for hcp in hcp_list],
+    )
+
+
 if __name__ == "__main__":
     # Load language model and embeddings necessary for generating and storing interaction notes
     llm = load_llm()
     openai_embedding = load_openai_embeddings()
-    collection_name = "interaction_notes"
 
     # Execute the function to create interaction notes in the specified collection
-    create_interaction_notes(llm, openai_embedding, collection_name)
+    # collection_name = "interaction_notes"
+    # create_interaction_notes(llm, openai_embedding, collection_name)
+
+    # Execute the function to create HCP names in the specified collection
+    collection_name = "hcp_names"
+    create_hcp_names(llm, openai_embedding, collection_name)
