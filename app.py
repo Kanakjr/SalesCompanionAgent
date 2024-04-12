@@ -4,7 +4,7 @@ from sales_companion import SalesCompanion
 
 @cl.on_chat_start
 def start():
-    sales_companion = SalesCompanion(useremail="john.doe@example.com")
+    sales_companion = SalesCompanion(useremail="kanak.dahake@example.com")
     cl.user_session.set("sales_companion", sales_companion)
 
 
