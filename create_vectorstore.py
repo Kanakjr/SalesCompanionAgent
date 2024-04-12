@@ -80,8 +80,8 @@ if __name__ == "__main__":
     openai_embedding = load_openai_embeddings()
 
     # Execute the function to create interaction notes in the specified collection
-    # collection_name = "interaction_notes"
-    # create_interaction_notes(llm, openai_embedding, collection_name)
+    collection_name = "interaction_notes"
+    create_interaction_notes(llm, openai_embedding, collection_name)
 
     # Execute the function to create HCP names in the specified collection
     collection_name = "hcp_names"
