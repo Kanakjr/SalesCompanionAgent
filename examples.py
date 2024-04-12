@@ -12,23 +12,10 @@ examples = [
         "format_instruction": "{{HCP_Name}} is a {{Speciality}} specialist at {{Account_Name}}. You can contact him via phone at {{Phone_No}} or email at {{Email}}.\n  - **HCP Name**: {{HCP_Name}}\n  - **Specialty**: {{Speciality}}\n  - **Phone Number**: {{Phone_No}}\n  - **Email**: {{Email}}\n  - **Account Type**: {{Account_Type}}\n  - **Account Name**: {{Account_Name}}"
     },
     {
-        "input": "Can you provide speaking notes for my Phone call/ Meeting with [HCP Name]?",
-        "description": "Sales Rep is asking to prepare talking points to his meet with doctor/hcp",
-        "query": "SELECT A.hcp_id, A.hcp_name,B.salesrep_id,B.name as SaleRep_Name\nFROM\n(SELECT DISTINCT hcp.hcp_id, hcp.hcp_name,hcp.Email\nFROM main.HCP hcp WHERE hcp.hcp_name = 'Mia Brown') A cross join \n(SELECT DISTINCT sr.salesrep_id, sr.name\nFROM main.SalesRep sr WHERE  sr.name = 'Bob Smith') B;",
-        "format_instruction": ""
-    },
-    {
         "input": "Who should [SalesRep] contact this week?",
         "description": "Sales Rep is asking for meeting plan to whom he should meet",
         "query": "WITH LastInteraction AS (\n    SELECT ih.HCP_ID, count(*) Number_of_Interaction,MAX(ih.Contact_Date) AS Last_Interaction_Date\n    FROM \n        main.InteractionHistory as ih\n    GROUP BY ih.HCP_ID\n)\nSELECT \n    sr.Name,\n    h.HCP_ID,\n\th.HCP_Name,\n    h.Priority,\n    pl.Calls Target,\n\tCOALESCE(li.Number_of_Interaction,0) Number_of_Interaction,\n\tCOALESCE(li.Number_of_Interaction,0)*100 / pl.Calls AS '%Achieved',\n    DATEDIFF(DAY, COALESCE(li.Last_Interaction_Date,DATEADD(QUARTER,DATEDIFF(QUARTER,0,GETDATE()),0)), GETDATE()) AS Days_Since_Last_Interaction,\n    pl.Calls * DATEDIFF(DAY, COALESCE(li.Last_Interaction_Date,DATEADD(QUARTER,DATEDIFF(QUARTER,0,GETDATE()),0)) ,GETDATE()) AS Combined_Score\nFROM \n\tmain.SalesRep sr \n\tLEFT JOIN main.HCP h  ON sr.SalesRep_ID = h.Territory_ID\n\tLEFT JOIN LastInteraction li  ON li.HCP_ID = h.HCP_ID\n\tJOIN main.PriorityLookup pl on h.Priority = pl.Priority\nWHERE \n\tsr.Name = 'Ethan Miller' \nORDER BY \n    Combined_Score DESC;",
         "format_instruction": "Here is plan for [SalesRep]:  \n        1. Schedule a meeting with **{{HCP_Name}}** a priority **{{Priority}}** contact. It has been **{{Days_Since_Last_Interaction}}** since your last interaction. Your goal is to meet **{{Target}}** this quarter, and you have currently completed **{{Number_of_Interaction}}** of these meetings.  \n        2. Schedule a meeting with **{{HCP_Name}}** a priority **{{Priority}}** contact. It has been **{{Days_Since_Last_Interaction}}** since your last interaction. Your goal is to meet **{{Target}}** this quarter, and you have currently completed **{{Number_of_Interaction}}** of these meetings.  \n        "
-    },
-    {
-        "input": "Can you Draft an email to [HCP Name]",
-        "description": "Sales Rep is asking to draft or write an email",
-        "query": "Select HCP_Name,Speciality,Phone_No,Email,Account_Type,Account_Name from [main].[HCP] Where HCP_Name = 'William Davis';",
-        # "query": "SELECT A.hcp_id, A.hcp_name,B.salesrep_id,B.name as SaleRep_Name\nFROM\n(SELECT DISTINCT hcp.hcp_id, hcp.hcp_name,hcp.Email\nFROM main.HCP hcp WHERE hcp.hcp_name = 'Mia Brown') A cross join \n(SELECT DISTINCT sr.salesrep_id, sr.name\nFROM main.SalesRep sr WHERE  sr.name = 'Bob Smith') B;",
-        "format_instruction": ""
     },
     {
         "input": "How many prescription has been written by [HCP Name]?",
