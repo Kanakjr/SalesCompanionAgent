@@ -82,11 +82,13 @@ class SQLAgent:
 if __name__ == "__main__":
     from dotenv import load_dotenv
     from structured import StructuredDatabase
+    from llm import load_llm
 
     load_dotenv("./.env")
-    llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    llm = load_llm()
 
     db = StructuredDatabase.from_uri("sqlite:///./data/SalesAssistant.db")
+    print(db.get_schema_str())
 
     user_info = {
         "SalesRep_ID": "T01",
@@ -96,6 +98,7 @@ if __name__ == "__main__":
         "Territory_ID": "T01",
         "Email": "john.doe@example.com",
     }
+    
     sql_agent = SQLAgent(llm=llm, db=db, user_info=user_info)
 
     # sql_agent.invoke("How am I performing against my goals?")
@@ -104,5 +107,5 @@ if __name__ == "__main__":
     # sql_agent.invoke("Who should I contact this week")
     # sql_agent.invoke("Write an email to Dr. Robert Wilson?")
 
-    sql_agent.invoke("Can you Draft an email to Tanya Lewis?")
+    # sql_agent.invoke("Can you Draft an email to Tanya Lewis?")
 
