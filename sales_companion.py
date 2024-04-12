@@ -81,7 +81,7 @@ class SalesCompanion:
 
 
 if __name__ == "__main__":
-    sales_companion = SalesCompanion(useremail="john.doe@example.com")
+    sales_companion = SalesCompanion(useremail="kanak.dahake@example.com")
     
     #print(f"User Info: {sales_companion.user_info}")
 
