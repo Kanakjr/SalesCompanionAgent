@@ -38,6 +38,12 @@ Example: {sql_agent_examples}
 2. 'rag_agent' used for retrieving detailed narratives or context from unstructured data, such as meeting and interaction notes between a healthcare professional (HCP) and a sales representative.
 Example: {rag_agent_examples}
 
+3. 'general_agent' used for general questions that do not require a database query or detailed narratives.
+Example: 'What is the weather today?' or 'What is the capital of France?' etc.
+
+4. 'greeting_agent' used for greeting the user and providing a welcome message.
+Example: 'Hello' or 'Good Morning' etc.
+
 {format_instructions}
 
 Output:""",
@@ -51,7 +57,8 @@ Output:""",
                              "sql_agent_examples":sql_agent_examples,
                              "rag_agent_examples":rag_agent_examples
                              },
-                             config=RunnableConfig(callbacks=callbacks)
+                             config=RunnableConfig(run_name='evaluate_question_type',
+                                                   callbacks=callbacks)
                             )
     response = RouterOutput.parse_obj(response)
     return response
