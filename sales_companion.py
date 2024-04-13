@@ -3,16 +3,22 @@ from structured import StructuredDatabase
 from sql_agent import SQLAgent
 from router_agent import evaluate_question_type
 from generate_agent import generate_content
+from rephrase_agent import rephrase_question
 from llm import load_llm
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 import concurrent.futures
 from langchain.schema.runnable.config import RunnableConfig
+from langchain.memory import ConversationBufferWindowMemory
+from langsmith import traceable
+from langchain.schema.runnable.config import RunnableConfig
+
 
 
 load_dotenv("./.env")
 structured_database_uri = "sqlite:///./data/SalesAssistant.db"
 
+# @traceable(name="SalesCompanion")
 class SalesCompanion:
     def __init__(self, useremail):
         self.useremail = useremail
@@ -20,7 +26,12 @@ class SalesCompanion:
         self.user_info = self.retrieve_user_info()
         self.llm = load_llm()
         self.sql_agent = SQLAgent(llm=self.llm, db=self.db, user_info=self.user_info)
-
+        self.memory = ConversationBufferWindowMemory(k=3)
+    
+    @property
+    def conversation_history(self):
+        return self.memory.load_memory_variables({})['history']
+    
     def retrieve_user_info(self):
         df = self.db.df_from_sql_query(
             f'SELECT * FROM SalesRep where Email = "{self.useremail}"'
@@ -42,7 +53,8 @@ class SalesCompanion:
             # Chain the prompt template with the language model for processing
             chain = prompt | self.llm
             response = chain.invoke({"query": query, "hcp_names": hcp_names},
-                                    config=RunnableConfig(callbacks=callbacks)
+                                    config=RunnableConfig(run_name='get_hcp_details',
+                                                          callbacks=callbacks)
                                     ).content
             if response != "No match found":
                 hcp_details = self.db.df_from_sql_query(f'SELECT * FROM HCP where HCP_Name = "{response}"').to_dict(orient="records")
@@ -53,30 +65,45 @@ class SalesCompanion:
     def invoke(self, input):
         return self.sql_agent.invoke(input=input)
 
+    @traceable(name="SalesCompanion")
     def run(self, input, callbacks=[]):
+        if self.conversation_history:
+            input = rephrase_question(query=input, conversation_history=self.conversation_history, callbacks=callbacks)
         evaluate_question_type_response = evaluate_question_type(input, callbacks=callbacks)
-        hcp_details = self.get_hcp_details(query=input, callbacks=callbacks)
+        response = None
         
-        if evaluate_question_type_response.agent == "rag_agent":
-            if hcp_details:
-                print(f"Fetching interaction notes for HCP: {hcp_details['HCP_Name']} against SalesRep: {self.user_info['SalesRep_ID']}")
-                interaction_notes = get_interaction_notes(query=input, SalesRep_ID=self.user_info["SalesRep_ID"], HCP_ID=hcp_details["HCP_ID"])
-            else:
-                interaction_notes = get_interaction_notes(query=input, SalesRep_ID=self.user_info["SalesRep_ID"])
-            
-            generate_output = generate_content(query=input,
-                                        salesrep_details=self.user_info,
-                                        hcp_details=hcp_details,
-                                        interaction_notes=interaction_notes, 
-                                        callbacks=callbacks)
-            return f"{generate_output.response}"
-                
-        elif evaluate_question_type_response.agent == "sql_agent":
-            if hcp_details:
-                input = f"{input} \n\n HCP Details: {hcp_details['HCP_Name']}"
-            response = self.sql_agent.run(input=input, callbacks=callbacks)
-            return response
+        if evaluate_question_type_response.agent == "general_agent" \
+            or evaluate_question_type_response.agent == "greeting_agent":
+            response = self.llm.invoke(input=input,
+                                       config=RunnableConfig(
+                                           run_name='general_agent',
+                                           callbacks=callbacks)).content
 
+        else:
+            hcp_details = self.get_hcp_details(query=input, callbacks=callbacks)
+            
+            if evaluate_question_type_response.agent == "rag_agent":
+                if hcp_details:
+                    print(f"Fetching interaction notes for HCP: {hcp_details['HCP_Name']} against SalesRep: {self.user_info['SalesRep_ID']}")
+                    interaction_notes = get_interaction_notes(query=input, SalesRep_ID=self.user_info["SalesRep_ID"], HCP_ID=hcp_details["HCP_ID"])
+                else:
+                    interaction_notes = get_interaction_notes(query=input, SalesRep_ID=self.user_info["SalesRep_ID"])
+                
+                generate_output = generate_content(query=input,
+                                            salesrep_details=self.user_info,
+                                            hcp_details=hcp_details,
+                                            interaction_notes=interaction_notes, 
+                                            callbacks=callbacks)
+                response = f"{generate_output.response}"
+                    
+            elif evaluate_question_type_response.agent == "sql_agent":
+                if hcp_details:
+                    input = f"{input} \n\n HCP Details: {hcp_details['HCP_Name']}"
+                response = self.sql_agent.run(input=input, callbacks=callbacks)
+                response = response
+
+        self.memory.save_context({"input": input}, {"output": response})
+        return response
 
     # Example of running multiple functions concurrently ###############
     # def run(self, input, callbacks=[]):
@@ -123,9 +150,13 @@ if __name__ == "__main__":
     # response = sales_companion.invoke("How am I performing against my goals?")
     # print(response)
 
-    response = sales_companion.run("What are the key points to discuss with Dr. Morgan Murphy?")
+    # response = sales_companion.run("What are the key points to discuss with Dr. Morgan Murphy?")
+    # print(response)
+
+    # Conversation History - Examples
+    response = sales_companion.run("How many prescription has been written by Dr. Morgan Murphy?")
     print(response)
 
-    # response = sales_companion.run("How many prescription has been written by Dr. Morgan Murphy?")
-    # print(response)
+    response = sales_companion.run("Tell me more about him.")
+    print(response)
     
