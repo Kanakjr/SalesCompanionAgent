@@ -11,8 +11,10 @@ SalesCompanionAgent is a comprehensive chat interface application tailored for s
 - **Data Integration:** Seamlessly integrates with SQL databases for structured data and uses a vector store for unstructured data analysis.
 - **User-Friendly Interface:** Built on the ChainLit framework for a responsive and intuitive user experience.
 
-### Technologies Used
-- ChainLit Framework
-- LangChain and GPT Models
-- SQL Agent
-- CromaDB
+### Technologies Stack
+- Python: Primary programming language.
+- ChromaDB, SQLite, FAISS: Used for data storage and retrieval.
+- OpenAI and Azure: Provides language models and embedding capabilities.
+- Dotenv: Manages environment variables.
+- Langchain: A toolkit for building applications with language models.
+- Chainlit: Used for building interactive web applications.

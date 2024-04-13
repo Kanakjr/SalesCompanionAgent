@@ -71,10 +71,11 @@ class SalesCompanion:
                                         callbacks=callbacks)
             return f"{generate_output.response}"
                 
-                
-        
         elif evaluate_question_type_response.agent == "sql_agent":
-            return self.sql_agent.run(input=input, callbacks=callbacks)
+            if hcp_details:
+                input = f"{input} \n\n HCP Details: {hcp_details['HCP_Name']}"
+            response = self.sql_agent.run(input=input, callbacks=callbacks)
+            return response
 
 
     # Example of running multiple functions concurrently ###############
