@@ -7,7 +7,7 @@ from rephrase_agent import rephrase_question
 from llm import load_llm
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
-import concurrent.futures
+# import concurrent.futures
 from langchain.schema.runnable.config import RunnableConfig
 from langchain.memory import ConversationBufferWindowMemory
 from langsmith import traceable
@@ -65,11 +65,13 @@ class SalesCompanion:
     def invoke(self, input):
         return self.sql_agent.invoke(input=input)
 
-    @traceable(name="SalesCompanion")
+    #@traceable(name="SalesCompanion")
     def run(self, input, callbacks=[]):
         if self.conversation_history:
             input = rephrase_question(query=input, conversation_history=self.conversation_history, callbacks=callbacks)
+        
         evaluate_question_type_response = evaluate_question_type(input, callbacks=callbacks)
+        
         response = None
         
         if evaluate_question_type_response.agent == "general_agent" \
@@ -87,6 +89,7 @@ class SalesCompanion:
                     print(f"Fetching interaction notes for HCP: {hcp_details['HCP_Name']} against SalesRep: {self.user_info['SalesRep_ID']}")
                     interaction_notes = get_interaction_notes(query=input, SalesRep_ID=self.user_info["SalesRep_ID"], HCP_ID=hcp_details["HCP_ID"])
                 else:
+                    print(f"Fetching all interaction notes for SalesRep: {self.user_info['SalesRep_ID']}")
                     interaction_notes = get_interaction_notes(query=input, SalesRep_ID=self.user_info["SalesRep_ID"])
                 
                 generate_output = generate_content(query=input,
@@ -94,7 +97,7 @@ class SalesCompanion:
                                             hcp_details=hcp_details,
                                             interaction_notes=interaction_notes, 
                                             callbacks=callbacks)
-                response = f"{generate_output.response}"
+                response = generate_output.response
                     
             elif evaluate_question_type_response.agent == "sql_agent":
                 if hcp_details:
