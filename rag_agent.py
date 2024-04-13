@@ -1,5 +1,6 @@
 from langchain_community.vectorstores import Chroma
-from llm import load_llm, load_openai_embeddings
+from langsmith import traceable
+from llm import load_openai_embeddings
 
 vectordb_interaction_notes = Chroma(
     collection_name="interaction_notes",
@@ -13,8 +14,7 @@ vectordb_hcp_names = Chroma(
     embedding_function=load_openai_embeddings(),
 )
 
-
-
+@traceable(name="get_interaction_notes")
 def get_interaction_notes(query, SalesRep_ID=None, HCP_ID=None):
     # Create filter based on SalesRep_ID and HCP_ID. If both are None, filter is empty
     # if both are given use and operator. If either is given use or operator
@@ -31,11 +31,13 @@ def get_interaction_notes(query, SalesRep_ID=None, HCP_ID=None):
         return docs
     else:
         return "No document found"
-    
+
+@traceable(name="get_hcp_names")  
 def get_hcp_names(query,filter={}):
     docs = vectordb_hcp_names.similarity_search(query, filter=filter)
     if docs:
         return docs
+        # return ", ".join([doc.page_content for doc in docs])
     else:
         return "No document found"
 
