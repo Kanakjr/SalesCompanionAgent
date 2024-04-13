@@ -46,7 +46,8 @@ Output:""",
                              "hcp_details":hcp_details,
                              "interaction_notes":interaction_notes,
                              },
-                             config=RunnableConfig(callbacks=callbacks)
+                             config=RunnableConfig(run_name='generate_content',
+                                                   callbacks=callbacks)
                             )
     response = GenerateOutput.parse_obj(response)
     return response
