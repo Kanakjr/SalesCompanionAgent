@@ -162,3 +162,4 @@ cython_debug/
 .chainlit/*
 data/.langchain.db
 readme_prompt.py
+data/vectorstore/*
