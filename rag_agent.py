@@ -30,7 +30,7 @@ def get_interaction_notes(query, SalesRep_ID=None, HCP_ID=None):
     if docs:
         return docs
     else:
-        return "No document found"
+        return []
 
 @traceable(name="get_hcp_names")  
 def get_hcp_names(query,filter={}):
@@ -39,7 +39,7 @@ def get_hcp_names(query,filter={}):
         return docs
         # return ", ".join([doc.page_content for doc in docs])
     else:
-        return "No document found"
+        return []
 
 if __name__ == "__main__":
     query = "follow-up video call with Dr. Morgan Murphy"

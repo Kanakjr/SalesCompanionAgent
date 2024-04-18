@@ -42,7 +42,7 @@ class SalesCompanion:
     
     def get_hcp_details(self, query, callbacks=[]):
         hcp_names = get_hcp_names(query)
-        if hcp_names != "No document found":
+        if hcp_names != []:
             prompt = ChatPromptTemplate.from_template(
                 """Given user query: {query}
                 and a list of HCP names: {hcp_names}

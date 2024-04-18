@@ -48,8 +48,8 @@ async def main(message: cl.Message):
     answer = response['answer']
     agent = response['agent']
 
+    text_elements = []
     if agent == "rag_agent":
-        text_elements = []
         source_documents = response['source']
         for source_idx, source_doc in enumerate(source_documents):
             source_name = f"{source_doc.metadata.get('Previous_Interaction_Method')}"
@@ -63,5 +63,4 @@ async def main(message: cl.Message):
         else:
             answer += "\n\n[No sources found]"
     
-    # await cl.Message(content=res).send()
     await cl.Message(content=answer, elements=text_elements).send()
