@@ -10,9 +10,12 @@ from langchain.schema.runnable.config import RunnableConfig
 def rephrase_question(query,conversation_history,callbacks=[]):
     # 
     prompt = PromptTemplate(
-    template= """Given user input: {query}
-Conversation History: {conversation_history}
-Rephrase the user query based on convesation history to make it more clear. 
+    template= """User query: {query}
+
+Conversation History: 
+{conversation_history}
+
+Rephrase the user query based on conversation history as an standalone query.
 Rephrased Query:""",
     input_variables=["query", "conversation_history"],
 )
