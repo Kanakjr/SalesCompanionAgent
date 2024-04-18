@@ -52,15 +52,16 @@ async def main(message: cl.Message):
         text_elements = []
         source_documents = response['source']
         for source_idx, source_doc in enumerate(source_documents):
-            source_name = f"source_{source_idx+1}"
+            source_name = f"{source_doc.metadata.get('Previous_Interaction_Method')}"
             text_elements.append(
                 cl.Text(content=source_doc.page_content, name=source_name)
             )
+        
         source_names = [text_el.name for text_el in text_elements]
         if source_names:
-            answer += f"\n\n[Content Generated using following Sources: {', '.join(source_names)}]"
+            answer += f"\n\n[**Sources:** {', '.join(source_names)}]"
         else:
-            answer += "\nNo sources found"
+            answer += "\n\n[No sources found]"
     
     # await cl.Message(content=res).send()
     await cl.Message(content=answer, elements=text_elements).send()
