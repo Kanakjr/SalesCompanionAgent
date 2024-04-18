@@ -43,5 +43,24 @@ def start():
 async def main(message: cl.Message):
     sales_companion = cl.user_session.get("sales_companion")
     cb = cl.LangchainCallbackHandler(stream_final_answer=True)
-    res = await cl.make_async(sales_companion.run)(message.content, callbacks=[cb])
-    await cl.Message(content=res).send()
+    response = await cl.make_async(sales_companion.run)(message.content, callbacks=[cb])
+
+    answer = response['answer']
+    agent = response['agent']
+
+    if agent == "rag_agent":
+        text_elements = []
+        source_documents = response['source']
+        for source_idx, source_doc in enumerate(source_documents):
+            source_name = f"source_{source_idx+1}"
+            text_elements.append(
+                cl.Text(content=source_doc.page_content, name=source_name)
+            )
+        source_names = [text_el.name for text_el in text_elements]
+        if source_names:
+            answer += f"\n\n[Content Generated using following Sources: {', '.join(source_names)}]"
+        else:
+            answer += "\nNo sources found"
+    
+    # await cl.Message(content=res).send()
+    await cl.Message(content=answer, elements=text_elements).send()

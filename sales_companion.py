@@ -67,16 +67,17 @@ class SalesCompanion:
 
     #@traceable(name="SalesCompanion")
     def run(self, input, callbacks=[]):
+        response = {'answer': None, 'agent': None, 'source': None}
+        
         if self.conversation_history:
             input = rephrase_question(query=input, conversation_history=self.conversation_history, callbacks=callbacks)
         
         evaluate_question_type_response = evaluate_question_type(input, callbacks=callbacks)
-        
-        response = None
-        
+        response['agent'] = evaluate_question_type_response.agent
+
         if evaluate_question_type_response.agent == "general_agent" \
             or evaluate_question_type_response.agent == "greeting_agent":
-            response = self.llm.invoke(input=input,
+            response['answer'] = self.llm.invoke(input=input,
                                        config=RunnableConfig(
                                            run_name='general_agent',
                                            callbacks=callbacks)).content
@@ -97,15 +98,16 @@ class SalesCompanion:
                                             hcp_details=hcp_details,
                                             interaction_notes=interaction_notes, 
                                             callbacks=callbacks)
-                response = generate_output.response
+                
+                response['answer'] = generate_output.response
+                response['source'] = interaction_notes
                     
             elif evaluate_question_type_response.agent == "sql_agent":
                 if hcp_details:
                     input = f"{input} \n\n HCP Details: {hcp_details['HCP_Name']}"
-                response = self.sql_agent.run(input=input, callbacks=callbacks)
-                response = response
+                response['answer'] = self.sql_agent.run(input=input, callbacks=callbacks)
 
-        self.memory.save_context({"input": input}, {"output": response})
+        self.memory.save_context({"input": input}, {"output": response['answer']})
         return response
 
     # Example of running multiple functions concurrently ###############
